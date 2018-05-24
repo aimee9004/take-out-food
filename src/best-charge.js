@@ -5,11 +5,17 @@ function bestCharge(selectedItems) {
   let items = loadAllItems()
   let promotions = loadPromotions()
   
+  let orderDetailStr = `============= 订餐明细 =============\n`
+  let promotionStr = `-----------------------------------\n使用优惠:\n`
   let itemTotalPrice = 0            // 计算未使用优惠总价
   let promotionOneTotalPrice = 0    // 使用优惠一 总价
   let promotionTwoTotalPrice = 0    // 使用优惠二 总价
   let lastTotalPrice = 0            // 最优惠总价
   let promotionItemIds = []
+  let lastType = ''
+  let lastNameStr = ''
+  let lastPromitionStr = ''
+  let savePrice = 0
   for(let i = 0; i < selectedItems.length; i++) {
     let oneItemId = selectedItems[i].split('x')[0].trim()
     let oneItemNum = +selectedItems[i].split('x')[1].trim()
@@ -50,17 +56,23 @@ function bestCharge(selectedItems) {
   // console.log('优惠菜品半价：', promotionTwoTotalPrice)
   if(promotionOneTotalPrice < promotionTwoTotalPrice) {
     lastTotalPrice = promotionOneTotalPrice
+    lastType = promotions[0].type
+    lastNameStr = ''
   }else {
     lastTotalPrice = promotionTwoTotalPrice
+    lastType = promotions[1].type
+    lastNameStr = getNameStr(promotionItemIds, items)
+  }  
+  savePrice = itemTotalPrice - lastTotalPrice
+
+  if(itemTotalPrice === lastTotalPrice) {
+    lastPromitionStr = ''
+  }else {
+    lastPromitionStr = promotionStr + showPromotion(lastType, lastNameStr, savePrice)
   }
   console.log('last price: ', lastTotalPrice)
   console.log('promition Ids: ', promotionItemIds)
 
-
-  let orderDetailStr = `============= 订餐明细 =============\n`
-  let promotionStr = `-----------------------------------\n使用优惠:\n`
-
-  // 判断是否含有优惠菜品
   for(let i = 0; i < selectedItems.length; i++) {
     let key = selectedItems[i].split('x')
     let obj = {
@@ -76,7 +88,7 @@ function bestCharge(selectedItems) {
     })
     orderDetailStr += showOrderDetail(obj.name, obj.num, obj.price)
   }
-
+  orderDetailStr += lastPromitionStr + showtotalPrice(lastTotalPrice)
   return orderDetailStr;
 }
 
@@ -84,29 +96,27 @@ function showOrderDetail(name, num, price) {
   return `${name} x ${num} = ${num * price}元\n`
 }
 function showPromotion(type, nameStr, savePrice) {
-  return `${type}${nameStr}，省${savePrice}`
+  if(nameStr === '') {
+    return `${type}，省${savePrice}元\n`  
+  }else {
+    return `${type}(${nameStr})，省${savePrice}元\n`
+  }
 }
 function showtotalPrice(totalPrice) {
-  return `
-  -----------------------------------\n
-  总计：${totalPrice}元\n
-  ===================================`
+  return `-----------------------------------\n总计：${totalPrice}元\n===================================`
 }
 
-// 获取所有类优惠型 计算他们的总价，显示对应优惠产品
-// selItems={id: 'ITEM0001', num: '2'}
-function getPromotionInfo(selItems, promotions) {
-  let totalPrice = 0
-  for(let i = 0; i < selItems.length; i++) {
-    for(let j = 0; j < promotions.length; j++) {
-      totalPrice += promotions.filter(v => {
-        if(v.id === selItems[i].id) {
-          return v.num * v.price
-        }
-      })
-    }
-  }
-  return totalPrice
+/**
+ * @param ["ITEM0001", "ITEM0013", "ITEM0022"]  itemIds 
+ * @param {*} items 
+ */
+function getNameStr(itemIds, items) {
+  let itemNames = []
+  for(let i = 0; i < itemIds.length; i++) {
+    let curItem = items.find(v => v.id === itemIds[i])
+    itemNames.push(curItem.name) 
+  }  
+  return itemNames.join('，')
 }
 
 
