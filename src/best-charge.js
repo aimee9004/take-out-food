@@ -70,8 +70,8 @@ function bestCharge(selectedItems) {
   }else {
     lastPromitionStr = promotionStr + showPromotion(lastType, lastNameStr, savePrice)
   }
-  console.log('last price: ', lastTotalPrice)
-  console.log('promition Ids: ', promotionItemIds)
+  // console.log('last price: ', lastTotalPrice)
+  // console.log('promition Ids: ', promotionItemIds)
 
   for(let i = 0; i < selectedItems.length; i++) {
     let key = selectedItems[i].split('x')
@@ -93,7 +93,11 @@ function bestCharge(selectedItems) {
 }
 
 function showOrderDetail(name, num, price) {
-  return `${name} x ${num} = ${num * price}元\n`
+  if(+num === 0) {
+    return ''
+  }else {
+    return `${name} x ${num} = ${num * price}元\n`
+  }
 }
 function showPromotion(type, nameStr, savePrice) {
   if(nameStr === '') {
